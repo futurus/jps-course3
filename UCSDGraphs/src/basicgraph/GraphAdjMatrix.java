@@ -14,7 +14,9 @@ import java.util.Set;
  * Representation of edges via an adjacency matrix.
  * 
  * @author UCSD MOOC development team and YOU
- *
+ * @author Vu Nguyen
+ * Date: Mar 18, 2016
+ * 
  */
 public class GraphAdjMatrix extends Graph {
 
@@ -108,7 +110,33 @@ public class GraphAdjMatrix extends Graph {
 	 * @return List<Integer> a list of indices of vertices.  
 	 */	
 	public List<Integer> getDistance2(int v) {
-		return null;
+		List<Integer> twoHopNeighbors = new ArrayList<Integer>();
+		int[][] Neighbors = new int[this.getNumVertices()][this.getNumVertices()];
+		
+		for (int i = 0; i < this.getNumVertices(); i++) {
+			for (int j = 0; j < this.getNumVertices(); j++) {
+				Neighbors[i][j] = dotProd(i, j); 
+			}
+		}
+		
+		for (int i = 0; i < this.getNumVertices(); i++) {
+			if (Neighbors[v][i] > 0) {
+				for (int j = 0; j < Neighbors[v][i]; j++) {
+					twoHopNeighbors.add(i);
+				}
+			}
+		}
+		return twoHopNeighbors;
+	}
+	
+	public int dotProd(int i, int j) {
+		int sum = 0;
+
+		for (int ind = 0; ind < this.getNumVertices(); ind++) {
+			sum += adjMatrix[i][ind] * adjMatrix[ind][j];		
+		}
+		
+		return sum;
 	}
 	
 	/**

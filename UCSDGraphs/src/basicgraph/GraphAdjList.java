@@ -14,6 +14,8 @@ import java.util.Set;
  * Representation of edges via adjacency lists.
  * 
  * @author UCSD MOOC development team and YOU
+ * @author Vu Nguyen
+ * Date: Mar 18, 2016
  *
  */
 public class GraphAdjList extends Graph {
@@ -96,8 +98,18 @@ public class GraphAdjList extends Graph {
 	 * @return List<Integer> a list of indices of vertices.  
 	 */		
 	 public List<Integer> getDistance2(int v) {
-		 // XXX: Implement this method in week 1
-		 return null;
+		 List<Integer> Neighbors = new ArrayList<Integer>();
+		 List<Integer> twoHopNeighbors = new ArrayList<Integer>();
+		 
+		 for (Integer neighbor : getNeighbors(v)) {
+			 twoHopNeighbors.clear();
+			 
+			 for (Integer neighbor2 : getNeighbors(neighbor)) {
+					 twoHopNeighbors.add(neighbor2);
+			 }
+			 Neighbors.addAll(twoHopNeighbors);
+		 }
+		 return Neighbors;
 	}
 	
 	/**

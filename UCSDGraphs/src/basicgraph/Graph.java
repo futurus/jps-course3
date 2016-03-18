@@ -18,6 +18,8 @@ import util.GraphLoader;
  * Representation of edges is left abstract.
  * 
  * @author UCSD MOOC development team and YOU
+ * @author Vu Nguyen
+ * Date: Mar 18, 2016
  * 
  */
 
@@ -121,8 +123,14 @@ public abstract class Graph {
 	 * @return The degree sequence of this graph.
 	 */
 	public List<Integer> degreeSequence() {
-		// XXX: Implement in part 1 of week 1
-		return null;
+		List<Integer> degSeq = new ArrayList<Integer>();
+		
+		for (int i = 0; i < getNumVertices(); i++) {
+			degSeq.add(getNeighbors(i).size() + getInNeighbors(i).size());
+		}
+		Collections.sort(degSeq);
+		Collections.reverse(degSeq);
+		return degSeq;
 	}
 	
 	/**
@@ -229,7 +237,6 @@ public abstract class Graph {
 	
 	public static void main (String[] args) {
 		GraphLoader.createIntersectionsFile("data/maps/myucsd.map", "data/intersections/myucsd.intersections");
-		
 
 		// For testing of Part 1 functionality
 		// Add your tests here to make sure your degreeSequence method is returning

@@ -63,6 +63,7 @@ public class GraphGrader {
  
         feedback += appendFeedback(i * 2, "Testing adjacency matrix");
         GraphLoader.loadGraph("data/graders/mod1/graph" + i + ".txt", mat);
+                
         result = mat.getDistance2(start);
         judge(result, corr);
     }
