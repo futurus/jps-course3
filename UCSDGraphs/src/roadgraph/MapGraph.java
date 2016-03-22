@@ -1,16 +1,25 @@
 /**
  * @author UCSD MOOC development team and YOU
- * 
- * A class which reprsents a graph of geographic locations
+ * @author Vu Nguyen
+ * Date: Mar 22, 2016
+ * A class which represents a graph of geographic locations
  * Nodes in the graph are intersections between 
  *
  */
 package roadgraph;
 
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.function.Consumer;
+
+//import com.sun.javafx.geom.Edge;
 
 import geography.GeographicPoint;
 import util.GraphLoader;
@@ -23,7 +32,8 @@ import util.GraphLoader;
  *
  */
 public class MapGraph {
-	//TODO: Add your member variables here in WEEK 2
+	Map<GeographicPoint, Set<GeographicPoint>> vertices;
+	Set<Edge> edges;
 	
 	
 	/** 
@@ -31,7 +41,8 @@ public class MapGraph {
 	 */
 	public MapGraph()
 	{
-		// TODO: Implement in this constructor in WEEK 2
+		vertices = new HashMap<GeographicPoint, Set<GeographicPoint>>();
+		edges = new HashSet<Edge>();
 	}
 	
 	/**
@@ -40,8 +51,7 @@ public class MapGraph {
 	 */
 	public int getNumVertices()
 	{
-		//TODO: Implement this method in WEEK 2
-		return 0;
+		return vertices.size();
 	}
 	
 	/**
@@ -50,8 +60,7 @@ public class MapGraph {
 	 */
 	public Set<GeographicPoint> getVertices()
 	{
-		//TODO: Implement this method in WEEK 2
-		return null;
+		return vertices.keySet();
 	}
 	
 	/**
@@ -60,12 +69,21 @@ public class MapGraph {
 	 */
 	public int getNumEdges()
 	{
-		//TODO: Implement this method in WEEK 2
-		return 0;
+		return edges.size();
 	}
 
 	
+	public boolean contains(GeographicPoint p) {
+		for (GeographicPoint v : vertices.keySet()) {
+			if (v.equals(p)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
+
 	/** Add a node corresponding to an intersection at a Geographic Point
 	 * If the location is already in the graph or null, this method does 
 	 * not change the graph.
@@ -75,7 +93,21 @@ public class MapGraph {
 	 */
 	public boolean addVertex(GeographicPoint location)
 	{
-		// TODO: Implement this method in WEEK 2
+		if (!this.contains(location)) {
+			vertices.put(location, new HashSet<GeographicPoint>());
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+	public boolean containsEdge(Edge e) {
+		for (Edge ed : edges) {
+			if (ed.equals(e)) {
+				return true;
+			}
+		}
 		return false;
 	}
 	
@@ -93,9 +125,19 @@ public class MapGraph {
 	 */
 	public void addEdge(GeographicPoint from, GeographicPoint to, String roadName,
 			String roadType, double length) throws IllegalArgumentException {
-
-		//TODO: Implement this method in WEEK 2
+		this.addVertex(from);
+		this.addVertex(to);
 		
+		if ((!this.contains(from) || !this.contains(to)) ||
+		(from == null || to == null || roadName == null || roadType == null) ||
+		length < 0) {
+			throw new IllegalArgumentException();
+		}
+		Edge e = new Edge(from, to, roadName, roadType, length);
+		if (!this.containsEdge(e)) {
+			edges.add(e);
+		}
+		vertices.get(from).add(to);
 	}
 	
 
@@ -123,12 +165,54 @@ public class MapGraph {
 	public List<GeographicPoint> bfs(GeographicPoint start, 
 			 					     GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
 	{
-		// TODO: Implement this method in WEEK 2
+		if (this.contains(start) && this.contains(goal)) {
+			List<GeographicPoint> path = new LinkedList<GeographicPoint> ();
+			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
+			Set<GeographicPoint> visited = new HashSet<GeographicPoint>();
+			List<GeographicPoint> queue = new LinkedList<GeographicPoint> ();
+			
+			path.add(start);
+			queue.add(start);
+			visited.add(start);
+			parent.put(start, null);
+						
+			while (!queue.isEmpty()) {
+				GeographicPoint curr = queue.remove(0);
+				nodeSearched.accept(curr);
+				
+				if (curr.equals(goal)) {
+					return getPath(parent, goal);
+				}
+				
+				for (GeographicPoint p : vertices.get(curr)) {
+					if (!visited.contains(p)) {
+						visited.add(p);
+						parent.put(p, curr);
+						queue.add(p);
+					}
+				}
+			}
+		}
+	
 		
 		// Hook for visualization.  See writeup.
 		//nodeSearched.accept(next.getLocation());
 
 		return null;
+	}
+	
+	public List<GeographicPoint> getPath(Map<GeographicPoint, GeographicPoint> p, GeographicPoint g) {
+		List<GeographicPoint> path = new ArrayList<GeographicPoint>();
+		path.add(g);
+		GeographicPoint curr = p.get(g);
+
+		while (curr != null) {
+			path.add(curr);
+			curr = p.get(curr);
+		}
+		Collections.reverse(path);
+		
+		return path;
 	}
 	
 
