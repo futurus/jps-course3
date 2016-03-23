@@ -10,7 +10,7 @@ package roadgraph;
 
 import geography.GeographicPoint;
 
-public class Edge {
+public class Edge implements Comparable<Edge> {
 	GeographicPoint from; 
 	GeographicPoint to; 
 	String roadName;
@@ -44,7 +44,29 @@ public class Edge {
 		return to;
 	}
 	
+	public double length() {
+		return length;
+	}
+	
+	public void setLength(double l) {
+		length += l;
+	}
+	
 	public boolean equals(Edge e) {
 		return (this.from == e.getFrom() && this.to== e.getTo());
+	}
+	
+	public int compareTo(Edge other) {
+		if (this.length() < other.length()) {
+			return -1;
+		} else if (this.length() > other.length()) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	
+	public Edge createCopy() {
+		return new Edge(this.getFrom(), this.getTo(), this.roadName, this.roadType, this.length());
 	}
 }
