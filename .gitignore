@@ -1,1 +1,5 @@
 UCSDGraphs/bin/
+UCSDGraphs/.classpath
+UCSDGraphs/data/intersections/myucsd.intersections
+UCSDGraphs/src/basicgraph/mod1.zip
+UCSDGraphs/src/roadgraph/mod2.zip
