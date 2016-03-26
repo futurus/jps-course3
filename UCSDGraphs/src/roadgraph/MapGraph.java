@@ -34,7 +34,6 @@ import util.GraphLoader;
 public class MapGraph {
 	Map<GeographicPoint, Set<Edge>> vertices;
 	int numEdges;
-	// Set<Edge> edges;
 
 	/**
 	 * Create a new empty MapGraph
@@ -42,7 +41,6 @@ public class MapGraph {
 	public MapGraph() {
 		vertices = new HashMap<GeographicPoint, Set<Edge>>();
 		numEdges = 0;
-		// edges = new HashSet<Edge>();
 	}
 
 	/**
@@ -72,16 +70,6 @@ public class MapGraph {
 		return numEdges;
 	}
 
-	public boolean contains(GeographicPoint p) {
-		for (GeographicPoint v : vertices.keySet()) {
-			if (v.equals(p)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	/**
 	 * Add a node corresponding to an intersection at a Geographic Point If the
 	 * location is already in the graph or null, this method does not change the
@@ -93,22 +81,11 @@ public class MapGraph {
 	 *         already in the graph, or the parameter is null).
 	 */
 	public boolean addVertex(GeographicPoint location) {
-		if (!this.contains(location)) {
+		if (!vertices.keySet().contains(location)) {
 			vertices.put(location, new HashSet<Edge>());
 			return true;
 		}
 
-		return false;
-	}
-
-	public boolean containsEdge(GeographicPoint v, Edge e) {
-		if (this.contains(v)) {
-			for (Edge ed : vertices.get(v)) {
-				if (ed.equals(e)) {
-					return true;
-				}
-			}
-		}
 		return false;
 	}
 
@@ -136,14 +113,15 @@ public class MapGraph {
 		this.addVertex(from);
 		this.addVertex(to);
 
-		if ((!this.contains(from) || !this.contains(to))
+		if ((!vertices.keySet().contains(from) || !vertices.keySet().contains(to))
 				|| (from == null || to == null || roadName == null || roadType == null) || length < 0) {
 			throw new IllegalArgumentException();
 		}
 
 		Edge e = new Edge(from, to, roadName, roadType, length);
-		if (!this.containsEdge(from, e)) {
+		if (!vertices.get(from).contains(e)) {
 			vertices.get(from).add(e);
+			numEdges++;
 		}
 	}
 
@@ -180,7 +158,7 @@ public class MapGraph {
 	public List<GeographicPoint> bfs(GeographicPoint start, GeographicPoint goal,
 			Consumer<GeographicPoint> nodeSearched) {
 		// initialization
-		if (this.contains(start) && this.contains(goal)) {
+		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
 			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
 			Set<GeographicPoint> visited = new HashSet<GeographicPoint>();
 			List<GeographicPoint> queue = new LinkedList<GeographicPoint>();
@@ -272,7 +250,7 @@ public class MapGraph {
 	public List<GeographicPoint> dijkstra(GeographicPoint start, GeographicPoint goal,
 			Consumer<GeographicPoint> nodeSearched) {
 		// initialization
-		if (this.contains(start) && this.contains(goal)) {
+		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
 
 			PriorityQueue<Edge> pq = new PriorityQueue<Edge>();
 			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
@@ -358,7 +336,7 @@ public class MapGraph {
 			Consumer<GeographicPoint> nodeSearched) {
 
 		// initialization
-		if (this.contains(start) && this.contains(goal)) {
+		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
 
 			PriorityQueue<Edge> pq = new PriorityQueue<Edge>();
 			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
