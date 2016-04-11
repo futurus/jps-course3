@@ -16,6 +16,7 @@ public class Edge implements Comparable<Edge> {
 	String roadName;
 	String roadType; 
 	double length;
+	boolean multiple;
 	
 	public Edge() {
 	}
@@ -26,6 +27,16 @@ public class Edge implements Comparable<Edge> {
 		this.roadName = rn;
 		this.roadType = rt;
 		this.length = length;
+		this.multiple = false;
+	}
+	
+	public Edge(GeographicPoint from, GeographicPoint to, String rn, String rt, double length, boolean multiple) {
+		this.from = from;
+		this.to = to;
+		this.roadName = rn;
+		this.roadType = rt;
+		this.length = length;
+		this.multiple = multiple;
 	}
 	
 	public void setRoadName(String n) {
@@ -48,12 +59,20 @@ public class Edge implements Comparable<Edge> {
 		return length;
 	}
 	
+	public boolean getMult() {
+		return multiple;
+	}
+	
+	public void setMult(boolean val) {
+		this.multiple = val;
+	}
+	
 	public void setLength(double l) {
 		length += l;
 	}
 	
 	public boolean equals(Edge e) {
-		return (this.from == e.getFrom() && this.to== e.getTo());
+		return (this.from == e.getFrom() && this.to == e.getTo()) && (this.multiple == e.getMult());
 	}
 	
 	public int compareTo(Edge other) {
@@ -67,6 +86,6 @@ public class Edge implements Comparable<Edge> {
 	}
 	
 	public Edge createCopy() {
-		return new Edge(this.getFrom(), this.getTo(), this.roadName, this.roadType, this.length());
+		return new Edge(this.getFrom(), this.getTo(), this.roadName, this.roadType, this.length(), this.getMult());
 	}
 }

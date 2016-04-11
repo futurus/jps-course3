@@ -33,6 +33,7 @@ import util.GraphLoader;
  */
 public class MapGraph {
 	Map<GeographicPoint, Set<Edge>> vertices;
+	Map<Edge, List<GeographicPoint>> bestPaths;
 	int numEdges;
 
 	/**
@@ -40,6 +41,7 @@ public class MapGraph {
 	 */
 	public MapGraph() {
 		vertices = new HashMap<GeographicPoint, Set<Edge>>();
+		bestPaths = new HashMap<Edge, List<GeographicPoint>>();
 		numEdges = 0;
 	}
 
@@ -125,6 +127,16 @@ public class MapGraph {
 		}
 	}
 
+	public void addEdge(Edge e) {
+		this.addVertex(e.getFrom());
+		this.addVertex(e.getTo());
+		
+		if (!vertices.get(e.getFrom()).contains(e)) {
+			vertices.get(e.getFrom()).add(e);
+			numEdges++;
+		}
+	}
+	
 	/**
 	 * Find the path from start to goal using breadth first search
 	 * 
@@ -159,7 +171,8 @@ public class MapGraph {
 			Consumer<GeographicPoint> nodeSearched) {
 		// initialization
 		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
-			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
+			// parent maps child -> parent
+			Map<GeographicPoint, Edge> parent = new HashMap<GeographicPoint, Edge>();
 			Set<GeographicPoint> visited = new HashSet<GeographicPoint>();
 			List<GeographicPoint> queue = new LinkedList<GeographicPoint>();
 
@@ -179,7 +192,7 @@ public class MapGraph {
 					GeographicPoint neighbor = e.getTo();
 					if (!visited.contains(neighbor)) {
 						visited.add(neighbor);
-						parent.put(neighbor, curr);
+						parent.put(neighbor, e);
 						queue.add(neighbor);
 					}
 				}
@@ -200,14 +213,23 @@ public class MapGraph {
 		return dist;
 	}
 
-	public List<GeographicPoint> getPath(Map<GeographicPoint, GeographicPoint> p, GeographicPoint g) {
+	public List<GeographicPoint> getPath(Map<GeographicPoint, Edge> p, GeographicPoint g) {
+		// bestPaths maps edge -> path
 		List<GeographicPoint> path = new ArrayList<GeographicPoint>();
 		path.add(g);
-		GeographicPoint curr = p.get(g);
+		Edge curr = p.get(g);
 
 		while (curr != null) {
-			path.add(curr);
-			curr = p.get(curr);
+			if (curr.getMult()) { // multiEdge
+				List<GeographicPoint> shortcut = bestPaths.get(curr);
+				// remove dup point
+				shortcut.remove(shortcut.size()-1);
+				Collections.reverse(shortcut);
+				path.addAll(shortcut);
+			} else { // simple edge
+				path.add(curr.getFrom());
+			}
+			curr = p.get(curr.getFrom());
 		}
 		// might not be necessary considering front-end is just
 		// drawing the path (goal -> start ~ start -> goal)
@@ -253,7 +275,7 @@ public class MapGraph {
 		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
 
 			PriorityQueue<Edge> pq = new PriorityQueue<Edge>();
-			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
+			Map<GeographicPoint, Edge> parent = new HashMap<GeographicPoint, Edge>();
 			Set<GeographicPoint> visited = new HashSet<GeographicPoint>();
 			Map<GeographicPoint, Double> dist = initDistance();
 
@@ -288,7 +310,7 @@ public class MapGraph {
 					// if we haven't visited n and
 					// if the path to n (thru curr) is shorter
 					if (!visited.contains(neighbor) && (dist.get(curr) + copy.length() < dist.get(neighbor))) {
-						parent.put(neighbor, curr);
+						parent.put(neighbor, e);
 						dist.put(neighbor, dist.get(curr) + e.length());
 						copy.setLength(dist.get(neighbor));
 						pq.add(copy);
@@ -339,7 +361,7 @@ public class MapGraph {
 		if (vertices.keySet().contains(start) && vertices.keySet().contains(goal)) {
 
 			PriorityQueue<Edge> pq = new PriorityQueue<Edge>();
-			Map<GeographicPoint, GeographicPoint> parent = new HashMap<GeographicPoint, GeographicPoint>();
+			Map<GeographicPoint, Edge> parent = new HashMap<GeographicPoint, Edge>();
 			Set<GeographicPoint> visited = new HashSet<GeographicPoint>();
 			Map<GeographicPoint, Double> dist = initDistance();
 			Map<GeographicPoint, Double> est = initDistance();
@@ -359,7 +381,12 @@ public class MapGraph {
 
 				// build path if we found goal
 				if (curr.equals(goal)) {
-					return getPath(parent, goal);
+					List<GeographicPoint> bestPath = getPath(parent, goal);
+					Edge multiEdge = new Edge(start, goal, "", "", start.distance(goal), true); // dist.get(goal) 
+					bestPaths.put(multiEdge, bestPath);
+					this.addEdge(multiEdge);
+
+					return bestPath;
 				}
 
 				// mark curr visited
@@ -376,10 +403,17 @@ public class MapGraph {
 					// if we haven't visited n and
 					// if the path to n (thru curr) is shorter
 					if (!visited.contains(neighbor) && (dist.get(curr) + copy.length() < dist.get(neighbor))) {
-						parent.put(neighbor, curr);
+						parent.put(neighbor, e);
 						dist.put(neighbor, dist.get(curr) + e.length());
 						est.put(neighbor, dist.get(neighbor) + neighbor.distance(goal));
-						copy.setLength(est.get(neighbor));
+
+						// A* difference
+						if (copy.getMult() && copy.getTo().distance(goal) < (1.0/2.0) * curr.distance(goal)) {
+							copy.setLength(0);
+						} else {
+							copy.setLength(est.get(neighbor));
+						}
+						
 						pq.add(copy);
 					}
 				}
